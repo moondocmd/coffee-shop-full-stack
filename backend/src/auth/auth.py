@@ -5,10 +5,9 @@ from jose import jwt
 from urllib.request import urlopen
 
 
-AUTH0_DOMAIN = 'full-stack-2020.us.auth0.com'  # MIKE UPDATED
+AUTH0_DOMAIN = 'full-stack-2020.us.auth0.com' 
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'coffee-shop' 
-#update once you figure other stuff out
 
 ## AuthError Exception
 '''
@@ -74,8 +73,7 @@ def get_token_auth_header():
 	it should raise an AuthError if the requested permission string is not in the payload permissions array
 	return true otherwise
 '''
-def check_permissions(permission, payload):  #STILL NEED TO DO THE ERROR CASES
-	print("WE ARE LOOKING FOR: " + str(permission) +" in " + str(payload['permissions']))
+def check_permissions(permission, payload):
 	if 'permissions' not in payload:
 		raise AuthError({
 			'code': 'invalid_header',
@@ -83,11 +81,10 @@ def check_permissions(permission, payload):  #STILL NEED TO DO THE ERROR CASES
 		}, 400)
 
 	if permission not in payload['permissions']:
-		print("DIDNT FIND THE PERMISSION")
 		raise AuthError({
-			'code': 'invalid_header',
-			'description': 'User does not have the correct permission'
-		}, 401)
+			'code': 'unauthorized',
+			'description': 'Correct permission not available'
+		}, 403)
 		
 	return True
 	
@@ -105,8 +102,6 @@ def check_permissions(permission, payload):  #STILL NEED TO DO THE ERROR CASES
 	!!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
 def verify_decode_jwt(token):
-	
-	print('LETS TRY AND VERIFY')
 	jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
 	jwks = json.loads(jsonurl.read())
 	unverified_header = jwt.get_unverified_header(token)
@@ -135,7 +130,6 @@ def verify_decode_jwt(token):
 				audience=API_AUDIENCE,
 				issuer='https://' + AUTH0_DOMAIN + '/'
 			)
-			print(payload)
 			return payload
 
 		except jwt.ExpiredSignatureError:
@@ -169,7 +163,6 @@ def verify_decode_jwt(token):
 	return the decorator which passes the decoded payload to the decorated method
 '''
 def requires_auth(permission=''):
-	print("HERES YOUR Permission to look for : " + str(permission))
 	def requires_auth_decorator(f):
 		@wraps(f)
 		def wrapper(*args, **kwargs):
